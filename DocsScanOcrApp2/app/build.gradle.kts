@@ -76,4 +76,7 @@ dependencies {
 
     // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    implementation("com.google.mlkit:text-recognition-korean:16.0.0-beta3")
+
 }

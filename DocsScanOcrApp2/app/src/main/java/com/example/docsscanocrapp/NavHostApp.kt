@@ -34,6 +34,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.File
+import androidx.core.net.toUri
 
 @Composable
 fun NavHostApp() {
@@ -73,7 +74,7 @@ fun HomeScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(onClick = { navController.navigate("camera") }) {
-                Text("사진 촬영하기")
+                Text("사진 촬영하기(수동 촬영)")
             }
         }
     }
@@ -145,33 +146,36 @@ fun CameraScreen(navController: NavController) {
 @Composable
 fun OcrResultScreen(navController: NavController) {
     val context = LocalContext.current
-    val imageUriString = remember { mutableStateOf("") }
     val textResult = remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        val uri = navController.currentBackStackEntry
-            ?.arguments
-            ?.getString("imageUri")
-            ?.let {  Uri.parse(it) }
+    val uri = navController.currentBackStackEntry
+        ?.arguments
+        ?.getString("imageUri")
+        ?.let { Uri.parse(it) }
 
+    LaunchedEffect(uri) {
         if (uri != null) {
-
-            val file = File(uri.path ?: "")
-            if (!file.exists() || file.length() == 0L) {
-                textResult.value = "이미지 파일이 손상되었거나 존재하지 않습니다."
-                return@LaunchedEffect
+            try {
+                val image = InputImage.fromFilePath(context, uri)
+                val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                recognizer.process(image)
+                    .addOnSuccessListener { visionText ->
+                        textResult.value = visionText.text
+                    }
+                    .addOnFailureListener { e ->
+                        textResult.value = "인식 실패: ${e.localizedMessage}"
+                    }
+            } catch (e: Exception) {
+                textResult.value = "이미지 처리 중 오류 발생: ${e.localizedMessage}"
             }
-
-            val image = InputImage.fromFilePath(context, uri)
-            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-            val result = recognizer.process(image)
-                .addOnSuccessListener { visionText ->
-                    textResult.value = visionText.text
-                }
-                .addOnFailureListener { e ->
-                    textResult.value = "인식 실패: ${e.localizedMessage}"
-                }
+        } else {
+            textResult.value = "이미지를 불러올 수 없습니다."
         }
+//            val file = File(uri.path ?: "")
+//            if (!file.exists() || file.length() == 0L) {
+//                textResult.value = "이미지 파일이 손상되었거나 존재하지 않습니다."
+//                return@LaunchedEffect
+//            }
     }
 
     Scaffold (
