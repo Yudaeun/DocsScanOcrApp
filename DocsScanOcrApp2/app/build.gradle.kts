@@ -70,13 +70,12 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
 
     // ML Kit OCR
-    implementation("com.google.mlkit:text-recognition:16.0.0")
+    implementation("com.google.mlkit:text-recognition-korean:16.0.0-beta3")
+//    implementation("com.google.mlkit:text-recognition:16.0.0")
 
     implementation("com.squareup:javapoet:1.13.0")
 
     // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    implementation("com.google.mlkit:text-recognition-korean:16.0.0-beta3")
 
 }
